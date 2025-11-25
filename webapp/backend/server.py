@@ -29,6 +29,12 @@ from .patterns import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Constants
+DAC_POLL_INTERVAL = 0.0001  # Seconds to wait between DAC status checks
+PREVIEW_FPS = 30  # Frames per second for preview stream
+PREVIEW_INTERVAL = 1 / PREVIEW_FPS  # Interval between preview frames
+SSE_RECONNECT_DELAY_MS = 2000  # Milliseconds before SSE reconnection
+
 # Create Flask app
 app = Flask(__name__,
             template_folder='../frontend/templates',
@@ -66,7 +72,7 @@ def frame_generator():
             if dac and frame:
                 # Wait for DAC ready
                 while dac.get_status(0) != 1 and running:
-                    time.sleep(0.0001)
+                    time.sleep(DAC_POLL_INTERVAL)
 
                 if running:
                     dac.write_frame(0, frame, pps)
@@ -192,7 +198,7 @@ def stream_frames():
                     ]
                     last_frame = current_frame.copy()
                     yield f"data: {json.dumps(frame_data)}\n\n"
-            time.sleep(1 / 30)  # 30 FPS preview
+            time.sleep(PREVIEW_INTERVAL)
 
     return Response(
         generate(),

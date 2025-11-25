@@ -5,6 +5,10 @@
  * and previewing patterns.
  */
 
+// Constants
+const SSE_RECONNECT_DELAY_MS = 2000;  // Milliseconds before SSE reconnection
+const STATUS_UPDATE_INTERVAL_MS = 2000;  // Milliseconds between status updates
+
 class OpenLaseApp {
     constructor() {
         this.canvas = document.getElementById('preview-canvas');
@@ -26,7 +30,7 @@ class OpenLaseApp {
         this.startPreviewStream();
         
         // Update status periodically
-        setInterval(() => this.updateStatus(), 2000);
+        setInterval(() => this.updateStatus(), STATUS_UPDATE_INTERVAL_MS);
     }
 
     setupEventListeners() {
@@ -269,7 +273,7 @@ class OpenLaseApp {
             setTimeout(() => {
                 eventSource.close();
                 this.startPreviewStream();
-            }, 2000);
+            }, SSE_RECONNECT_DELAY_MS);
         };
     }
 

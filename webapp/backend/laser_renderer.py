@@ -16,6 +16,11 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Callable
 from .helios_output import LaserPoint, normalize_to_helios, color_to_rgb
 
+# Constants
+SMALL_Z = 0.00001  # Small Z value to avoid division by zero
+DEFAULT_FLATNESS = 0.00001  # Default flatness for bezier curves
+DEFAULT_SNAP = 0.00001  # Default snap distance
+
 
 @dataclass
 class RenderParams:
@@ -30,8 +35,8 @@ class RenderParams:
     end_dwell: int = 3  # Dwell at end of line
     end_wait: int = 7  # Wait points at end
     curve_angle: float = 0.866  # cos(30 degrees)
-    flatness: float = 0.00001
-    snap: float = 0.00001
+    flatness: float = DEFAULT_FLATNESS
+    snap: float = DEFAULT_SNAP
     render_flags: int = 0
 
 

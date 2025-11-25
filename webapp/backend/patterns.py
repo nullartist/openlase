@@ -18,6 +18,42 @@ from typing import List, Dict, Any, Callable
 from .laser_renderer import LaserRenderer, LaserPoint, RenderParams
 
 
+def hsv_to_rgb(h: float, s: float, v: float) -> int:
+    """
+    Convert HSV color to RGB integer value.
+    
+    Args:
+        h: Hue (0-360)
+        s: Saturation (0-1)
+        v: Value/brightness (0-1)
+    
+    Returns:
+        RGB color as integer (0xRRGGBB)
+    """
+    h = h % 360
+    c = v * s
+    x = c * (1 - abs((h / 60) % 2 - 1))
+    m = v - c
+
+    if h < 60:
+        r, g, b = c, x, 0
+    elif h < 120:
+        r, g, b = x, c, 0
+    elif h < 180:
+        r, g, b = 0, c, x
+    elif h < 240:
+        r, g, b = 0, x, c
+    elif h < 300:
+        r, g, b = x, 0, c
+    else:
+        r, g, b = c, 0, x
+
+    r = int((r + m) * 255)
+    g = int((g + m) * 255)
+    b = int((b + m) * 255)
+    return (r << 16) | (g << 8) | b
+
+
 @dataclass
 class PatternConfig:
     """Configuration for a pattern."""
@@ -74,7 +110,7 @@ class RotatingCubePattern(PatternGenerator):
 
         # Rainbow color cycling
         hue = (t * 50) % 360
-        color = self._hsv_to_rgb(hue, 1.0, 1.0)
+        color = hsv_to_rgb(hue, 1.0, 1.0)
 
         for i in range(2):
             self.renderer.scale_3(0.6, 0.6, 0.6)
@@ -113,31 +149,6 @@ class RotatingCubePattern(PatternGenerator):
 
         return self.renderer.render_frame()
 
-    def _hsv_to_rgb(self, h: float, s: float, v: float) -> int:
-        """Convert HSV to RGB color value."""
-        h = h % 360
-        c = v * s
-        x = c * (1 - abs((h / 60) % 2 - 1))
-        m = v - c
-
-        if h < 60:
-            r, g, b = c, x, 0
-        elif h < 120:
-            r, g, b = x, c, 0
-        elif h < 180:
-            r, g, b = 0, c, x
-        elif h < 240:
-            r, g, b = 0, x, c
-        elif h < 300:
-            r, g, b = x, 0, c
-        else:
-            r, g, b = c, 0, x
-
-        r = int((r + m) * 255)
-        g = int((g + m) * 255)
-        b = int((b + m) * 255)
-        return (r << 16) | (g << 8) | b
-
     @classmethod
     def get_config(cls) -> PatternConfig:
         return PatternConfig(
@@ -165,7 +176,7 @@ class SpiralPattern(PatternGenerator):
         for arm in range(self.arms):
             arm_offset = (2 * math.pi * arm) / self.arms + t
             hue = (arm * 120 + t * 30) % 360
-            color = self._hsv_to_rgb(hue, 1.0, 1.0)
+            color = hsv_to_rgb(hue, 1.0, 1.0)
 
             self.renderer.begin(LaserRenderer.LINESTRIP)
             for i in range(100):
@@ -177,30 +188,6 @@ class SpiralPattern(PatternGenerator):
             self.renderer.end()
 
         return self.renderer.render_frame()
-
-    def _hsv_to_rgb(self, h: float, s: float, v: float) -> int:
-        h = h % 360
-        c = v * s
-        x = c * (1 - abs((h / 60) % 2 - 1))
-        m = v - c
-
-        if h < 60:
-            r, g, b = c, x, 0
-        elif h < 120:
-            r, g, b = x, c, 0
-        elif h < 180:
-            r, g, b = 0, c, x
-        elif h < 240:
-            r, g, b = 0, x, c
-        elif h < 300:
-            r, g, b = x, 0, c
-        else:
-            r, g, b = c, 0, x
-
-        r = int((r + m) * 255)
-        g = int((g + m) * 255)
-        b = int((b + m) * 255)
-        return (r << 16) | (g << 8) | b
 
     @classmethod
     def get_config(cls) -> PatternConfig:
@@ -232,7 +219,7 @@ class WavePattern(PatternGenerator):
             y_offset = -0.6 + (wave * 0.6)
             phase = wave * math.pi / 2
             hue = (wave * 120 + t * 50) % 360
-            color = self._hsv_to_rgb(hue, 1.0, 1.0)
+            color = hsv_to_rgb(hue, 1.0, 1.0)
 
             self.renderer.begin(LaserRenderer.LINESTRIP)
             for i in range(100):
@@ -242,30 +229,6 @@ class WavePattern(PatternGenerator):
             self.renderer.end()
 
         return self.renderer.render_frame()
-
-    def _hsv_to_rgb(self, h: float, s: float, v: float) -> int:
-        h = h % 360
-        c = v * s
-        x = c * (1 - abs((h / 60) % 2 - 1))
-        m = v - c
-
-        if h < 60:
-            r, g, b = c, x, 0
-        elif h < 120:
-            r, g, b = x, c, 0
-        elif h < 180:
-            r, g, b = 0, c, x
-        elif h < 240:
-            r, g, b = 0, x, c
-        elif h < 300:
-            r, g, b = x, 0, c
-        else:
-            r, g, b = c, 0, x
-
-        r = int((r + m) * 255)
-        g = int((g + m) * 255)
-        b = int((b + m) * 255)
-        return (r << 16) | (g << 8) | b
 
     @classmethod
     def get_config(cls) -> PatternConfig:
@@ -296,7 +259,7 @@ class CirclePattern(PatternGenerator):
         self.renderer.reset()
 
         hue = (t * 60) % 360
-        color = self._hsv_to_rgb(hue, 1.0, 1.0)
+        color = hsv_to_rgb(hue, 1.0, 1.0)
 
         self.renderer.begin(LaserRenderer.LINESTRIP)
         for i in range(self.segments + 1):
@@ -307,30 +270,6 @@ class CirclePattern(PatternGenerator):
         self.renderer.end()
 
         return self.renderer.render_frame()
-
-    def _hsv_to_rgb(self, h: float, s: float, v: float) -> int:
-        h = h % 360
-        c = v * s
-        x = c * (1 - abs((h / 60) % 2 - 1))
-        m = v - c
-
-        if h < 60:
-            r, g, b = c, x, 0
-        elif h < 120:
-            r, g, b = x, c, 0
-        elif h < 180:
-            r, g, b = 0, c, x
-        elif h < 240:
-            r, g, b = 0, x, c
-        elif h < 300:
-            r, g, b = x, 0, c
-        else:
-            r, g, b = c, 0, x
-
-        r = int((r + m) * 255)
-        g = int((g + m) * 255)
-        b = int((b + m) * 255)
-        return (r << 16) | (g << 8) | b
 
     @classmethod
     def get_config(cls) -> PatternConfig:
@@ -364,7 +303,7 @@ class LissajousPattern(PatternGenerator):
 
         delta = t if self.animate_delta else self.delta
         hue = (t * 40) % 360
-        color = self._hsv_to_rgb(hue, 1.0, 1.0)
+        color = hsv_to_rgb(hue, 1.0, 1.0)
 
         self.renderer.begin(LaserRenderer.LINESTRIP)
         for i in range(200):
@@ -375,30 +314,6 @@ class LissajousPattern(PatternGenerator):
         self.renderer.end()
 
         return self.renderer.render_frame()
-
-    def _hsv_to_rgb(self, h: float, s: float, v: float) -> int:
-        h = h % 360
-        c = v * s
-        x = c * (1 - abs((h / 60) % 2 - 1))
-        m = v - c
-
-        if h < 60:
-            r, g, b = c, x, 0
-        elif h < 120:
-            r, g, b = x, c, 0
-        elif h < 180:
-            r, g, b = 0, c, x
-        elif h < 240:
-            r, g, b = 0, x, c
-        elif h < 300:
-            r, g, b = x, 0, c
-        else:
-            r, g, b = c, 0, x
-
-        r = int((r + m) * 255)
-        g = int((g + m) * 255)
-        b = int((b + m) * 255)
-        return (r << 16) | (g << 8) | b
 
     @classmethod
     def get_config(cls) -> PatternConfig:
@@ -482,7 +397,7 @@ class TextPattern(PatternGenerator):
         start_x = -total_width / 2
 
         hue = (t * 60) % 360
-        color = self._hsv_to_rgb(hue, 1.0, 1.0)
+        color = hsv_to_rgb(hue, 1.0, 1.0)
 
         # Apply some animation
         self.renderer.rotate(math.sin(t * 0.5) * 0.1)
@@ -502,30 +417,6 @@ class TextPattern(PatternGenerator):
                         self.renderer.end()
 
         return self.renderer.render_frame()
-
-    def _hsv_to_rgb(self, h: float, s: float, v: float) -> int:
-        h = h % 360
-        c = v * s
-        x = c * (1 - abs((h / 60) % 2 - 1))
-        m = v - c
-
-        if h < 60:
-            r, g, b = c, x, 0
-        elif h < 120:
-            r, g, b = x, c, 0
-        elif h < 180:
-            r, g, b = 0, c, x
-        elif h < 240:
-            r, g, b = 0, x, c
-        elif h < 300:
-            r, g, b = x, 0, c
-        else:
-            r, g, b = c, 0, x
-
-        r = int((r + m) * 255)
-        g = int((g + m) * 255)
-        b = int((b + m) * 255)
-        return (r << 16) | (g << 8) | b
 
     @classmethod
     def get_config(cls) -> PatternConfig:
