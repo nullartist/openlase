@@ -7,6 +7,10 @@ A web-based laser control interface for the OpenLase laser graphics toolkit, wit
 - **Web Interface**: Control your laser from any browser
 - **Pattern Generator**: Multiple built-in patterns (rotating cube, spirals, waves, Lissajous curves, text)
 - **Real-time Preview**: See what your laser is projecting in the browser
+- **Video/Screen Capture**: Convert video from webcam or screen capture to realtime laser output
+- **Edge Detection**: Canny and threshold-based edge detection for video input
+- **ILDA Recording**: Record laser output to standard ILDA format
+- **ILDA Editor**: Load, edit, and export ILDA files with transformations
 - **Helios DAC Support**: Direct output to Helios DAC hardware
 - **Simulation Mode**: Test patterns without hardware
 
@@ -58,6 +62,7 @@ python run.py --hardware
 
 The web interface communicates with the backend via a REST API:
 
+### Core API
 - `GET /api/status` - Get current system status
 - `GET /api/patterns` - List available patterns
 - `POST /api/pattern` - Set the current pattern
@@ -66,6 +71,29 @@ The web interface communicates with the backend via a REST API:
 - `POST /api/pps` - Set points per second
 - `GET /api/frame` - Get current frame data
 - `GET /api/frame/stream` - Server-sent events for real-time preview
+
+### Video/Capture API
+- `GET/POST /api/input/mode` - Get or set input mode (pattern, video, capture)
+- `POST /api/input/capture/frame` - Process a captured frame from browser
+- `GET/POST /api/input/capture/params` - Get or set edge detection parameters
+
+### Recording API
+- `POST /api/record/start` - Start ILDA recording
+- `POST /api/record/stop` - Stop ILDA recording
+- `GET /api/record/status` - Get recording status
+- `GET /api/record/download` - Download recorded ILDA file
+
+### Editor API
+- `POST /api/editor/load` - Load an ILDA file
+- `POST /api/editor/load-recording` - Load current recording into editor
+- `GET /api/editor/info` - Get file information
+- `GET /api/editor/frame/<index>` - Get frame preview
+- `POST /api/editor/frame/<index>/delete` - Delete a frame
+- `POST /api/editor/frame/<index>/duplicate` - Duplicate a frame
+- `POST /api/editor/transform` - Apply transformations (scale, rotate, color)
+- `POST /api/editor/undo` - Undo last edit
+- `GET /api/editor/download` - Download edited ILDA file
+- `POST /api/editor/play/<index>` - Play a frame on the laser
 
 ## Available Patterns
 
@@ -76,6 +104,46 @@ The web interface communicates with the backend via a REST API:
 5. **Lissajous** - Lissajous curve patterns
 6. **Text** - Animated text display
 
+## Video/Capture Input
+
+The application supports realtime laser output from:
+
+1. **Webcam** - Use your webcam as input
+2. **Screen Capture** - Capture your screen or a window
+
+### Edge Detection Settings
+
+- **Threshold** - Lower threshold for edge detection
+- **Threshold 2** - Upper threshold for Canny edge detection
+- **Blur** - Gaussian blur sigma for noise reduction
+- **Decimate** - Point decimation factor
+- **Use Canny** - Toggle between Canny and simple threshold detection
+- **Invert Edges** - Invert the detected edges
+
+## ILDA Recording
+
+Record your laser output to standard ILDA format:
+
+1. Click "Record" to start recording
+2. All frames sent to the laser will be captured
+3. Click "Stop" to stop recording
+4. Click "Download Recording" to save as .ild file
+
+## ILDA Editor
+
+Edit ILDA files with the built-in editor:
+
+1. Click "Load ILDA" to load a file, or "Load Recording" to edit your recording
+2. Browse frames in the frame list
+3. Click frames to preview them
+4. Use transformation buttons to modify:
+   - **Scale** - Scale the entire file
+   - **Rotate** - Rotate all points
+   - **Color** - Set a uniform color
+   - **Undo** - Undo the last change
+5. Delete or duplicate individual frames
+6. Click "Download" to save your edited file
+
 ## Architecture
 
 ```
@@ -85,7 +153,9 @@ webapp/
 │   ├── helios_output.py     # Helios DAC interface
 │   ├── laser_renderer.py    # OpenLase-compatible renderer
 │   ├── patterns.py          # Pattern generators
-│   └── server.py            # Flask web server
+│   ├── server.py            # Flask web server
+│   ├── video_input.py       # Video/capture processing
+│   └── ilda_recorder.py     # ILDA recording and editing
 ├── frontend/
 │   ├── templates/
 │   │   └── index.html       # Main HTML template

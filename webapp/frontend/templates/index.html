@@ -10,7 +10,7 @@
     <div class="container">
         <header>
             <h1>🔴 OpenLase Web</h1>
-            <p class="subtitle">Laser Control Interface</p>
+            <p class="subtitle">Laser Control Interface with Video/Capture Input</p>
         </header>
 
         <main>
@@ -18,10 +18,14 @@
                 <h2>Preview</h2>
                 <div class="preview-container">
                     <canvas id="preview-canvas" width="500" height="500"></canvas>
+                    <!-- Video/Capture preview overlay -->
+                    <video id="capture-video" autoplay playsinline muted style="display: none;"></video>
+                    <canvas id="capture-canvas" style="display: none;"></canvas>
                 </div>
                 <div class="preview-info">
                     <span id="point-count">Points: 0</span>
                     <span id="fps-display">FPS: 0</span>
+                    <span id="recording-indicator" class="hidden">🔴 REC</span>
                 </div>
             </div>
 
@@ -54,13 +58,113 @@
                     </div>
                 </div>
 
+                <!-- Input Mode Selection -->
                 <div class="control-section">
+                    <h3>Input Source</h3>
+                    <div class="tab-buttons">
+                        <button id="tab-pattern" class="tab-btn active" data-mode="pattern">Patterns</button>
+                        <button id="tab-capture" class="tab-btn" data-mode="capture">Capture</button>
+                        <button id="tab-editor" class="tab-btn" data-mode="editor">ILDA Editor</button>
+                    </div>
+                </div>
+
+                <!-- Pattern Controls (default visible) -->
+                <div id="pattern-controls" class="control-section tab-content">
                     <h3>Pattern</h3>
                     <select id="pattern-select" class="control-select">
                         <option value="">Loading...</option>
                     </select>
                     <div id="pattern-params" class="params-container"></div>
                     <button id="btn-apply-pattern" class="btn btn-secondary">Apply Pattern</button>
+                </div>
+
+                <!-- Capture Controls (hidden by default) -->
+                <div id="capture-controls" class="control-section tab-content hidden">
+                    <h3>Video/Screen Capture</h3>
+                    <div class="capture-source-buttons">
+                        <button id="btn-webcam" class="btn btn-secondary">📹 Webcam</button>
+                        <button id="btn-screen" class="btn btn-secondary">🖥️ Screen</button>
+                        <button id="btn-stop-capture" class="btn btn-danger hidden">Stop Capture</button>
+                    </div>
+                    
+                    <div class="capture-params">
+                        <h4>Edge Detection Settings</h4>
+                        <div class="setting-item">
+                            <label for="threshold-slider">Threshold:</label>
+                            <input type="range" id="threshold-slider" min="10" max="200" value="50">
+                            <span id="threshold-value">50</span>
+                        </div>
+                        <div class="setting-item">
+                            <label for="threshold2-slider">Threshold 2:</label>
+                            <input type="range" id="threshold2-slider" min="50" max="250" value="100">
+                            <span id="threshold2-value">100</span>
+                        </div>
+                        <div class="setting-item">
+                            <!-- Blur slider uses integer values 0-50, displayed as sigma 0.0-5.0 -->
+                            <label for="blur-slider">Blur:</label>
+                            <input type="range" id="blur-slider" min="0" max="50" value="10" step="1">
+                            <span id="blur-value">1.0</span>
+                        </div>
+                        <div class="setting-item">
+                            <label for="decimate-slider">Decimate:</label>
+                            <input type="range" id="decimate-slider" min="1" max="10" value="2">
+                            <span id="decimate-value">2</span>
+                        </div>
+                        <div class="setting-item checkbox-item">
+                            <input type="checkbox" id="use-canny" checked>
+                            <label for="use-canny">Use Canny Edge Detection</label>
+                        </div>
+                        <div class="setting-item checkbox-item">
+                            <input type="checkbox" id="invert-edges">
+                            <label for="invert-edges">Invert Edges</label>
+                        </div>
+                        <button id="btn-apply-capture-params" class="btn btn-secondary">Apply Settings</button>
+                    </div>
+                </div>
+
+                <!-- ILDA Editor Controls (hidden by default) -->
+                <div id="editor-controls" class="control-section tab-content hidden">
+                    <h3>ILDA Editor</h3>
+                    <div class="editor-file-controls">
+                        <input type="file" id="ilda-file-input" accept=".ild,.ilda" style="display:none;">
+                        <button id="btn-load-ilda" class="btn btn-secondary">📂 Load ILDA</button>
+                        <button id="btn-load-recording" class="btn btn-secondary">📼 Load Recording</button>
+                        <button id="btn-download-ilda" class="btn btn-primary" disabled>💾 Download</button>
+                    </div>
+                    
+                    <div id="editor-info" class="editor-info hidden">
+                        <p>File: <span id="editor-filename">--</span></p>
+                        <p>Frames: <span id="editor-frame-count">0</span> | Points: <span id="editor-point-count">0</span></p>
+                    </div>
+                    
+                    <div id="editor-frame-list" class="frame-list hidden">
+                        <h4>Frames</h4>
+                        <div id="frame-list-container" class="frame-list-container"></div>
+                    </div>
+                    
+                    <div id="editor-transform" class="editor-transform hidden">
+                        <h4>Transform</h4>
+                        <div class="transform-buttons">
+                            <button id="btn-scale" class="btn btn-small">Scale</button>
+                            <button id="btn-rotate" class="btn btn-small">Rotate</button>
+                            <button id="btn-set-color" class="btn btn-small">Color</button>
+                            <button id="btn-undo" class="btn btn-small">↩ Undo</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recording Controls -->
+                <div class="control-section">
+                    <h3>Recording</h3>
+                    <div class="button-group">
+                        <button id="btn-record-start" class="btn btn-danger">⏺ Record</button>
+                        <button id="btn-record-stop" class="btn btn-secondary" disabled>⏹ Stop</button>
+                    </div>
+                    <div id="recording-status" class="recording-status">
+                        <span id="record-frame-count">Frames: 0</span>
+                        <span id="record-duration">Duration: 0.0s</span>
+                    </div>
+                    <button id="btn-download-recording" class="btn btn-primary hidden">💾 Download Recording</button>
                 </div>
 
                 <div class="control-section">

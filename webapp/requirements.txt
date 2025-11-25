@@ -12,6 +12,10 @@ eventlet>=0.33.0
 # HTTP server for production
 gunicorn>=22.0.0
 
+# Image processing for video/capture input
+Pillow>=10.0.0
+numpy>=1.24.0
+
 # Development tools
 pytest>=7.0.0
 pytest-flask>=1.2.0
