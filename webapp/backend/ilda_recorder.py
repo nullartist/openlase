@@ -224,12 +224,14 @@ class IldaWriter:
             if is_last:
                 status |= 0x80  # Last point bit
             
+            # ILDA Format 5 uses BGR byte ordering (Blue, Green, Red)
+            # while our internal IldaPoint uses RGB. We reverse the order here.
             point_data = struct.pack(
-                '>hhBBBB',  # Big-endian: x, y, status, r, g, b
+                '>hhBBBB',  # Big-endian: x, y, status, blue, green, red
                 point.x,
                 point.y,
                 status,
-                point.b,  # ILDA uses BGR order
+                point.b,
                 point.g,
                 point.r
             )

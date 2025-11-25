@@ -11,6 +11,7 @@ the Free Software Foundation, either version 2.1 or version 3.
 """
 
 import base64
+import io
 import json
 import logging
 import threading
@@ -410,7 +411,6 @@ def download_recording():
     ilda_format = format_map.get(format_str, IldaFormat.FORMAT_2D_RGB)
     data = ilda_recorder.export(ilda_format)
     
-    import io
     return send_file(
         io.BytesIO(data),
         mimetype='application/octet-stream',
@@ -590,7 +590,6 @@ def editor_download():
     if not data:
         return jsonify({'status': 'error', 'message': 'Export failed'}), 500
     
-    import io
     return send_file(
         io.BytesIO(data),
         mimetype='application/octet-stream',

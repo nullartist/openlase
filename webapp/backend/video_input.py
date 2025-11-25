@@ -45,6 +45,7 @@ class TraceParams:
     blur_sigma: float = 1.0
     use_canny: bool = True
     invert: bool = False
+    max_points_per_object: int = 10000  # Maximum points traced per object
 
 
 class EdgeTracer:
@@ -210,7 +211,9 @@ class EdgeTracer:
                      (-1, 0),           (1, 0),
                      (-1, 1),  (0, 1),  (1, 1)]
         
-        while stack and len(points) < 10000:  # Limit to prevent infinite loops
+        # Use configurable max points limit to prevent infinite loops
+        max_points = self.params.max_points_per_object
+        while stack and len(points) < max_points:
             x, y = stack.pop()
             
             if x < 0 or x >= width or y < 0 or y >= height:

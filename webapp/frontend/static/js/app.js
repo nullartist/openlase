@@ -123,10 +123,12 @@ class OpenLaseApp {
     }
 
     setupCaptureSliders() {
+        // Configure sliders for edge detection parameters
+        // The blur slider uses integer values 0-50, divided by 10 for sigma values 0.0-5.0
         const sliders = [
             { id: 'threshold-slider', valueId: 'threshold-value' },
             { id: 'threshold2-slider', valueId: 'threshold2-value' },
-            { id: 'blur-slider', valueId: 'blur-value', divisor: 10 },
+            { id: 'blur-slider', valueId: 'blur-value', divisor: 10 },  // Convert 0-50 to 0.0-5.0
             { id: 'decimate-slider', valueId: 'decimate-value' }
         ];
         
