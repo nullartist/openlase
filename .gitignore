@@ -1,3 +1,14 @@
 build
 *~
 *.pyc
+__pycache__/
+*.egg-info/
+.eggs/
+dist/
+*.so
+*.dylib
+*.dll
+.env
+.venv
+venv/
+node_modules/
